@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800">
+  <defs>
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e40af;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#fbbf24;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <path d="M400 100 Q300 50 200 100 Q150 150 180 250 Q200 300 250 280 Q300 260 320 300 Q340 340 300 380 Q250 420 220 400 Q180 380 160 420 Q140 460 180 500 Q220 540 280 520 Q340 500 360 540 Q380 580 360 620 Q340 660 380 680 Q420 700 400 750 Q380 800 400 800 Q420 800 400 750 Q380 700 420 680 Q460 660 440 620 Q420 580 440 540 Q460 500 520 520 Q580 540 620 500 Q660 460 640 420 Q620 380 580 400 Q550 420 500 380 Q460 340 480 300 Q500 260 550 280 Q600 300 620 250 Q650 150 600 100 Q500 50 400 100Z" fill="url(#blueGrad)" stroke="#1e40af" stroke-width="2"/>
+  <path d="M400 100 Q500 50 600 100 Q650 150 620 250 Q600 300 550 280 Q500 260 480 300 Q460 340 500 380 Q550 420 580 400 Q620 380 640 420 Q660 460 620 500 Q580 540 520 520 Q460 500 440 540 Q420 580 440 620 Q460 660 420 680 Q380 700 400 750 Q420 800 400 800 Q380 800 400 750 Q420 700 380 680 Q340 660 360 620 Q380 580 360 540 Q340 500 280 520 Q220 540 180 500 Q140 460 160 420 Q180 380 220 400 Q250 420 300 380 Q340 340 320 300 Q300 260 250 280 Q200 300 180 250 Q150 150 200 100 Q300 50 400 100Z" fill="url(#goldGrad)" stroke="#f59e0b" stroke-width="2"/>
+  <circle cx="320" cy="200" r="15" fill="white"/>
+  <circle cx="320" cy="200" r="8" fill="#1e40af"/>
+  <circle cx="480" cy="200" r="15" fill="white"/>
+  <circle cx="480" cy="200" r="8" fill="#1e40af"/>
+</svg>

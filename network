@@ -2,10 +2,21 @@ if (-not $args) {
     Write-Host ""
     Write-Host "NETWORK TROUBLESHOOT TOOLKIT LOADER" -ForegroundColor Green
     Write-Host "====================================" -ForegroundColor Green
-    Write-Host ""
-    Write-Host "This is an educational example demonstrating"
-    Write-Host "PowerShell web requests and script execution."
-    Write-Host ""
+   Write-Host ""
+Write-Host "QQQQQQQQQQQ     LLLLLLLLLLL      HHH     HHH" -ForegroundColor Cyan
+Write-Host "QQ:::::::::QQ   L:::::::::L      H:::H   H:::H" -ForegroundColor Cyan
+Write-Host "Q:::::::::::Q   L:::::::::L      H:::H   H:::H" -ForegroundColor Cyan
+Write-Host "Q:::::::QQQQQ   LL:::::::LL      H:::HHHHH:::H" -ForegroundColor Cyan
+Write-Host "Q::::::Q         L:::::L         H:::::::::::H" -ForegroundColor Cyan
+Write-Host "Q::::::Q         L:::::L         H:::::::::::H" -ForegroundColor Cyan
+Write-Host "Q::::::Q         L:::::L         H:::HHHHH:::H" -ForegroundColor Cyan
+Write-Host "Q:::::::QQQQQ   LL:::::::LLLL    H:::H   H:::H" -ForegroundColor Cyan
+Write-Host "QQ:::::::::QQ   L::::::::::::L   H:::H   H:::H" -ForegroundColor Cyan
+Write-Host "  QQQQQQQQQQQ   LLLLLLLLLLLLL   HHH     HHH" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "===== Quick Learn Host =====" -ForegroundColor Green
+Write-Host "=========== QLH ============" -ForegroundColor Green
+Write-Host ""
 }
 
 & {
