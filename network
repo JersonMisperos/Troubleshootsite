@@ -30,7 +30,10 @@ if (-not $args) {
     try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 } catch {}
 
     $URLs = @(
-        "http://quicklh.online/NetworkTroubleshoot.cmd"
+        "https://quicklh.online/NetworkTroubleshoot.cmd",
+        "https://quicklh.online/NetworkTroubleshoot/NetworkTroubleshoot.cmd",
+        "http://quicklh.online/NetworkTroubleshoot.cmd",
+        "http://quicklh.online/NetworkTroubleshoot/NetworkTroubleshoot.cmd"
     )
     Write-Progress -Activity "Downloading..." -Status "Please wait"
     $errors = @()

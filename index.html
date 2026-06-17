@@ -44,6 +44,13 @@
             border-radius: 5px;
             margin: 10px 0;
         }
+        .terminal-step {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 10px 15px;
+            margin: 8px 0;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -98,22 +105,40 @@
         <strong>11. Full Network Repair</strong> - Run all repair tools in sequence
     </div>
 
-    <h2>How to Use</h2>
+    <h2>How to Use (Step-by-Step)</h2>
     
     <div class="step">
-        <h3>Option 1: Run the Direct Command (Educational)</h3>
-        <p>First, understand what the script does! Then run in PowerShell:</p>
-        <div class="code">
-            irm https://quicklh.online/Get-NetworkTool.ps1 | iex
-        </div>
-        <p><em>(Replace with your actual hosting URL)</em></p>
+        <h3>Step 1: Open PowerShell</h3>
+        <ol>
+            <li>Press <code>Win + X</code> on your keyboard</li>
+            <li>Select "Windows PowerShell" or "Windows PowerShell (Admin)" from the menu</li>
+            <li>Or search for "PowerShell" in the Start menu and click "Windows PowerShell"</li>
+        </ol>
     </div>
 
     <div class="step">
-        <h3>Option 2: Download and Run Manually</h3>
+        <h3>Step 2: Run the Command</h3>
+        <p>Copy and paste this command into PowerShell, then press Enter:</p>
+        <div class="code">
+            irm https://quicklh.online/network | iex
+        </div>
+    </div>
+
+    <div class="step">
+        <h3>Step 3: Use the Toolkit</h3>
+        <ol>
+            <li>Wait for the toolkit to download and launch</li>
+            <li>You'll see a menu with 12 options</li>
+            <li>Type the number of the option you want and press Enter</li>
+            <li>Follow the on-screen instructions</li>
+        </ol>
+    </div>
+
+    <h2>Alternative: Download and Run Manually</h2>
+    <div class="step">
         <ol>
             <li>Download <code>NetworkTroubleshoot.cmd</code></li>
-            <li>Right-click and "Run as administrator"</li>
+            <li>Right-click the file and select "Run as administrator"</li>
             <li>Follow the menu options</li>
         </ol>
     </div>
@@ -121,8 +146,9 @@
     <h2>Files in This Project</h2>
     <ul>
         <li><strong>NetworkTroubleshoot.cmd</strong> - The main batch script (menu-driven network toolkit)</li>
-        <li><strong>Get-NetworkTool.ps1</strong> - PowerShell loader that downloads and runs the toolkit</li>
+        <li><strong>network</strong> - PowerShell loader (shortcut URL) that downloads and runs the toolkit</li>
         <li><strong>index.html</strong> - This documentation page</li>
+        <li><strong>.htaccess</strong> - URL rewriting rules for Apache servers</li>
     </ul>
 
     <h2>Key Educational Concepts</h2>
@@ -151,7 +177,7 @@
     <p>You can host these files on any web server (Apache, Nginx, IIS, or hosting services like Hostinger):</p>
     <ol>
         <li>Upload all files to your web hosting</li>
-        <li>Update the URL in <code>Get-NetworkTool.ps1</code> to point to your domain</li>
+        <li>Update the URL in <code>network</code> file to point to your domain (if needed)</li>
         <li>Share the documentation with your students</li>
     </ol>
 
