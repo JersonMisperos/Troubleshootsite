@@ -1,0 +1,8 @@
+# Enable URL rewriting
+RewriteEngine On
+
+# Shortcut: /network loads the network script
+RewriteRule ^network$ network [L]
+
+# Also support /network.ps1 for compatibility
+RewriteRule ^network\.ps1$ network [L]

