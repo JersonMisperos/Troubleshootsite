@@ -3,16 +3,16 @@ if (-not $args) {
     Write-Host "NETWORK TROUBLESHOOT TOOLKIT LOADER" -ForegroundColor Green
     Write-Host "====================================" -ForegroundColor Green
    Write-Host ""
-Write-Host "QQQQQQQQQQQ     LLLLLLLLLLL      HHH     HHH" -ForegroundColor Cyan
-Write-Host "QQ:::::::::QQ   L:::::::::L      H:::H   H:::H" -ForegroundColor Cyan
-Write-Host "Q:::::::::::Q   L:::::::::L      H:::H   H:::H" -ForegroundColor Cyan
-Write-Host "Q:::::::QQQQQ   LL:::::::LL      H:::HHHHH:::H" -ForegroundColor Cyan
-Write-Host "Q::::::Q         L:::::L         H:::::::::::H" -ForegroundColor Cyan
-Write-Host "Q::::::Q         L:::::L         H:::::::::::H" -ForegroundColor Cyan
-Write-Host "Q::::::Q         L:::::L         H:::HHHHH:::H" -ForegroundColor Cyan
-Write-Host "Q:::::::QQQQQ   LL:::::::LLLL    H:::H   H:::H" -ForegroundColor Cyan
-Write-Host "QQ:::::::::QQ   L::::::::::::L   H:::H   H:::H" -ForegroundColor Cyan
-Write-Host "  QQQQQQQQQQQ   LLLLLLLLLLLLL   HHH     HHH" -ForegroundColor Cyan
+Write-Host "QQQQQQQQQQQ        LLLLLLLLLLL      HHH     HHH" -ForegroundColor Cyan
+Write-Host "QQ:::::::::QQ:     L:::::::::L      H:::H   H:::H" -ForegroundColor Cyan
+Write-Host "Q:::::::::::Q:     L:::::::::L      H:::H   H:::H" -ForegroundColor Cyan
+Write-Host "Q:::::::QQQQQ:     LL:::::::LL      H:::HHHHH:::H" -ForegroundColor Cyan
+Write-Host "Q::::::Q    :Q       L:::::L        H:::::::::::H" -ForegroundColor Cyan
+Write-Host "Q::::::Q    :Q       L:::::L        H:::::::::::H" -ForegroundColor Cyan
+Write-Host "Q::::::Q    :Q       L:::::L        H:::HHHHH:::H" -ForegroundColor Cyan
+Write-Host "Q:::::::QQQQQQQ:   LL:::::::LLLL    H:::H   H:::H" -ForegroundColor Cyan
+Write-Host "QQ:::::::::QQQQ:   L::::::::::::L   H:::H   H:::H" -ForegroundColor Cyan
+Write-Host "  QQQQQQQQQQQQQ:   LLLLLLLLLLLLL   HHH     HHH" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "===== Quick Learn Host =====" -ForegroundColor Green
 Write-Host "=========== QLH ============" -ForegroundColor Green
