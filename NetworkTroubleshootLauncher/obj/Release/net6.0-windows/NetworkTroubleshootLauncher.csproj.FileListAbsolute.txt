@@ -1,0 +1,16 @@
+F:\newprojectsept2026\Troubleshootsite\NetworkTroubleshootLauncher\bin\Release\net6.0-windows\NetworkTroubleshoot.ps1
+F:\newprojectsept2026\Troubleshootsite\NetworkTroubleshootLauncher\bin\Release\net6.0-windows\NetworkTroubleshoot.exe
+F:\newprojectsept2026\Troubleshootsite\NetworkTroubleshootLauncher\bin\Release\net6.0-windows\NetworkTroubleshoot.deps.json
+F:\newprojectsept2026\Troubleshootsite\NetworkTroubleshootLauncher\bin\Release\net6.0-windows\NetworkTroubleshoot.runtimeconfig.json
+F:\newprojectsept2026\Troubleshootsite\NetworkTroubleshootLauncher\bin\Release\net6.0-windows\NetworkTroubleshoot.dll
+F:\newprojectsept2026\Troubleshootsite\NetworkTroubleshootLauncher\bin\Release\net6.0-windows\NetworkTroubleshoot.pdb
+F:\newprojectsept2026\Troubleshootsite\NetworkTroubleshootLauncher\obj\Release\net6.0-windows\NetworkTroubleshootLauncher.csproj.AssemblyReference.cache
+F:\newprojectsept2026\Troubleshootsite\NetworkTroubleshootLauncher\obj\Release\net6.0-windows\NetworkTroubleshootLauncher.GeneratedMSBuildEditorConfig.editorconfig
+F:\newprojectsept2026\Troubleshootsite\NetworkTroubleshootLauncher\obj\Release\net6.0-windows\NetworkTroubleshootLauncher.AssemblyInfoInputs.cache
+F:\newprojectsept2026\Troubleshootsite\NetworkTroubleshootLauncher\obj\Release\net6.0-windows\NetworkTroubleshootLauncher.AssemblyInfo.cs
+F:\newprojectsept2026\Troubleshootsite\NetworkTroubleshootLauncher\obj\Release\net6.0-windows\NetworkTroubleshootLauncher.csproj.CoreCompileInputs.cache
+F:\newprojectsept2026\Troubleshootsite\NetworkTroubleshootLauncher\obj\Release\net6.0-windows\NetworkTroubleshoot.dll
+F:\newprojectsept2026\Troubleshootsite\NetworkTroubleshootLauncher\obj\Release\net6.0-windows\refint\NetworkTroubleshoot.dll
+F:\newprojectsept2026\Troubleshootsite\NetworkTroubleshootLauncher\obj\Release\net6.0-windows\NetworkTroubleshoot.pdb
+F:\newprojectsept2026\Troubleshootsite\NetworkTroubleshootLauncher\obj\Release\net6.0-windows\NetworkTroubleshootLauncher.genruntimeconfig.cache
+F:\newprojectsept2026\Troubleshootsite\NetworkTroubleshootLauncher\obj\Release\net6.0-windows\ref\NetworkTroubleshoot.dll

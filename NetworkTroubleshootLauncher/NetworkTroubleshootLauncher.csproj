@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>NetworkTroubleshoot</AssemblyName>
+    <RootNamespace>NetworkTroubleshootLauncher</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\NetworkTroubleshoot.ps1" Link="NetworkTroubleshoot.ps1" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
