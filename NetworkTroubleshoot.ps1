@@ -559,22 +559,13 @@ function Show-CommandEditorDialog {
     $commandTextBox.ForeColor = "#0f172a"
     $contentPanel.Controls.Add($commandTextBox)
 
-    $adminCheck = New-Object System.Windows.Forms.CheckBox
-    $adminCheck.Text = "Run as Administrator"
-    $adminCheck.Location = New-Object System.Drawing.Point(20, 205)
-    $adminCheck.Size = New-Object System.Drawing.Size(200, 24)
-    $adminCheck.Font = New-Object System.Drawing.Font("Segoe UI", 10)
-    $adminCheck.ForeColor = "#0f172a"
-    $adminCheck.BackColor = "#eef2ff"
-    $contentPanel.Controls.Add($adminCheck)
-
     $runBtn = New-Object System.Windows.Forms.Button
     $runBtn.Text = "Run"
     $runBtn.Location = New-Object System.Drawing.Point(610, 246)
     $runBtn.Size = New-Object System.Drawing.Size(150, 42)
     Set-ModernButtonStyle -Button $runBtn -BackColor "#2563eb" -ForeColor "White" -Large $true
     $runBtn.Add_Click({
-        Start-CommandInShell -CommandText $commandTextBox.Text -Shell 'CMD' -RunAsAdmin $adminCheck.Checked
+        Start-CommandInShell -CommandText $commandTextBox.Text -Shell 'CMD' -RunAsAdmin $false
         $dialog.Close()
     })
     $contentPanel.Controls.Add($runBtn)
@@ -659,13 +650,6 @@ function Show-ADCheatSheet {
     $commandEditBox.BorderStyle = "FixedSingle"
     $adForm.Controls.Add($commandEditBox)
 
-    $adminCheck = New-Object System.Windows.Forms.CheckBox
-    $adminCheck.Text = "Run as Administrator"
-    $adminCheck.Location = New-Object System.Drawing.Point(20, 786)
-    $adminCheck.Size = New-Object System.Drawing.Size(180, 24)
-    $adminCheck.Font = New-Object System.Drawing.Font("Segoe UI", 9)
-    $adForm.Controls.Add($adminCheck)
-
     $runNowBtn = New-Object System.Windows.Forms.Button
     $runNowBtn.Location = New-Object System.Drawing.Point(790, 660)
     $runNowBtn.Size = New-Object System.Drawing.Size(160, 120)
@@ -677,7 +661,7 @@ function Show-ADCheatSheet {
     $runNowBtn.Font = New-Object System.Drawing.Font("Segoe UI", 11, [System.Drawing.FontStyle]::Bold)
     $runNowBtn.Cursor = "Hand"
     $runNowBtn.Add_Click({
-        Start-CommandInShell -CommandText $commandEditBox.Text -Shell 'CMD' -RunAsAdmin $adminCheck.Checked
+        Start-CommandInShell -CommandText $commandEditBox.Text -Shell 'CMD' -RunAsAdmin $false
     })
     $adForm.Controls.Add($runNowBtn)
 
