@@ -2,6 +2,18 @@
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
+Add-Type @'
+using System;
+using System.Runtime.InteropServices;
+public static class NativeConsole {
+    [DllImport("user32.dll", SetLastError = true)]
+    public static extern bool SetForegroundWindow(IntPtr hWnd);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+}
+'@
+
 # Create main form - modern glass-inspired style
 $form = New-Object System.Windows.Forms.Form
 $form.Text = "IT Infrastructure Toolkit"
@@ -335,6 +347,109 @@ function Get-ADCheatSheetText {
     return $sb.ToString()
 }
 
+$script:PersistentShellMap = @{
+    'PowerShell' = $null
+    'CMD' = $null
+}
+
+function Get-PersistentShellProcess {
+    param(
+        [ValidateSet('PowerShell', 'CMD')]
+        [string]$Shell = 'PowerShell'
+    )
+
+    $existing = $script:PersistentShellMap[$Shell]
+    if ($existing -and -not $existing.HasExited) {
+        return $existing
+    }
+
+    $fileName = if ($Shell -eq 'PowerShell') { 'powershell.exe' } else { 'cmd.exe' }
+    $arguments = if ($Shell -eq 'PowerShell') { @('-NoLogo', '-NoExit') } else { @('/K') }
+
+    $startInfo = New-Object System.Diagnostics.ProcessStartInfo
+    $startInfo.FileName = $fileName
+    $startInfo.Arguments = ($arguments -join ' ')
+    $startInfo.UseShellExecute = $false
+    $startInfo.CreateNoWindow = $false
+    $startInfo.RedirectStandardInput = $true
+    $startInfo.WorkingDirectory = (Get-Location).Path
+
+    $process = [System.Diagnostics.Process]::Start($startInfo)
+    $script:PersistentShellMap[$Shell] = $process
+
+    if ($process -and $process.MainWindowHandle -and $process.MainWindowHandle -ne [IntPtr]::Zero) {
+        [void][NativeConsole]::ShowWindow($process.MainWindowHandle, 9)
+        [void][NativeConsole]::SetForegroundWindow($process.MainWindowHandle)
+    }
+
+    return $process
+}
+
+function Send-CommandToVisibleShell {
+    param(
+        [string]$CommandText,
+        [ValidateSet('PowerShell', 'CMD')]
+        [string]$Shell = 'PowerShell'
+    )
+
+    $trimmed = $CommandText.Trim()
+    if ([string]::IsNullOrWhiteSpace($trimmed)) {
+        return
+    }
+
+    $process = $script:PersistentShellMap[$Shell]
+    if (-not $process -or $process.HasExited) {
+        $process = Get-PersistentShellProcess -Shell $Shell
+    }
+
+    if ($process -and -not $process.HasExited -and $process.StandardInput) {
+        if ($process.MainWindowHandle -and $process.MainWindowHandle -ne [IntPtr]::Zero) {
+            [void][NativeConsole]::ShowWindow($process.MainWindowHandle, 9)
+            [void][NativeConsole]::SetForegroundWindow($process.MainWindowHandle)
+        }
+
+        $process.StandardInput.WriteLine($trimmed)
+        $process.StandardInput.Flush()
+        return
+    }
+
+    $fallback = if ($Shell -eq 'PowerShell') { 'powershell.exe' } else { 'cmd.exe' }
+    $fallbackArgs = if ($Shell -eq 'PowerShell') { @('-NoLogo', '-NoExit') } else { @('/K') }
+    Start-Process -FilePath $fallback -ArgumentList $fallbackArgs -Wait:$false | Out-Null
+}
+
+function Start-ShellProcess {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$FileName,
+        [Parameter(Mandatory = $true)]
+        [string[]]$ArgumentList,
+        [bool]$RunAsAdmin = $false
+    )
+
+    $baseParams = @{
+        FilePath = $FileName
+        ArgumentList = $ArgumentList
+        WorkingDirectory = (Get-Location).Path
+        Wait = $false
+    }
+
+    if ($RunAsAdmin) {
+        $adminParams = $baseParams + @{ Verb = 'RunAs' }
+
+        try {
+            Start-Process @adminParams | Out-Null
+        }
+        catch {
+            Start-Process -FilePath $FileName -Verb RunAs -ArgumentList $ArgumentList -WorkingDirectory (Get-Location).Path -Wait:$false | Out-Null
+        }
+
+        return
+    }
+
+    Start-Process @baseParams | Out-Null
+}
+
 function Start-CommandInShell {
     param(
         [string]$CommandText,
@@ -350,21 +465,22 @@ function Start-CommandInShell {
     }
 
     try {
-        if ($Shell -eq 'PowerShell') {
-            $file = 'powershell.exe'
-            $args = @('-NoExit', '-NoLogo', '-Command', $trimmed)
-        }
-        else {
-            $file = 'cmd.exe'
-            $args = @('/K', $trimmed)
+        if ($RunAsAdmin) {
+            if ($Shell -eq 'PowerShell') {
+                $file = 'powershell.exe'
+                $wrapped = "& { $trimmed }"
+                $args = @('-NoExit', '-NoLogo', '-Command', $wrapped)
+            }
+            else {
+                $file = 'cmd.exe'
+                $args = @('/K', $trimmed)
+            }
+
+            Start-ShellProcess -FileName $file -ArgumentList $args -RunAsAdmin:$RunAsAdmin
+            return
         }
 
-        if ($RunAsAdmin) {
-            Start-Process $file -Verb RunAs -ArgumentList $args | Out-Null
-        }
-        else {
-            Start-Process $file -ArgumentList $args | Out-Null
-        }
+        Send-CommandToVisibleShell -CommandText $trimmed -Shell $Shell
     }
     catch {
         [System.Windows.Forms.MessageBox]::Show("Error: $($_.Exception.Message)", "Execution failed", "OK", "Error") | Out-Null
@@ -377,78 +493,101 @@ function Show-CommandEditorDialog {
     )
 
     $dialog = New-Object System.Windows.Forms.Form
-    $dialog.Text = "Edit Command Before Running"
-    $dialog.Size = New-Object System.Drawing.Size(900, 320)
+    $dialog.Text = ""
+    $dialog.Size = New-Object System.Drawing.Size(920, 360)
     $dialog.StartPosition = "CenterParent"
-    $dialog.FormBorderStyle = "FixedDialog"
+    $dialog.FormBorderStyle = "None"
     $dialog.MaximizeBox = $false
     $dialog.MinimizeBox = $false
-    $dialog.BackColor = "#f8fafc"
+    $dialog.ControlBox = $false
+    $dialog.BackColor = "#eef2ff"
+    $dialog.Padding = New-Object System.Windows.Forms.Padding(0)
+    $dialog.TopMost = $false
+
+    $headerPanel = New-Object System.Windows.Forms.Panel
+    $headerPanel.Size = New-Object System.Drawing.Size(920, 54)
+    $headerPanel.Location = New-Object System.Drawing.Point(0, 0)
+    $headerPanel.BackColor = "#0f172a"
+    $headerPanel.Dock = [System.Windows.Forms.DockStyle]::Top
+    $dialog.Controls.Add($headerPanel)
 
     $titleLabel = New-Object System.Windows.Forms.Label
-    $titleLabel.Text = "Edit the selected command before running it:"
-    $titleLabel.Font = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Bold)
-    $titleLabel.Location = New-Object System.Drawing.Point(20, 18)
+    $titleLabel.Text = "Edit Command Before Running"
+    $titleLabel.Font = New-Object System.Drawing.Font("Segoe UI", 14, [System.Drawing.FontStyle]::Bold)
+    $titleLabel.ForeColor = "White"
+    $titleLabel.Location = New-Object System.Drawing.Point(18, 14)
     $titleLabel.AutoSize = $true
-    $dialog.Controls.Add($titleLabel)
+    $headerPanel.Controls.Add($titleLabel)
 
-    $shellLabel = New-Object System.Windows.Forms.Label
-    $shellLabel.Text = "Run in:"
-    $shellLabel.Location = New-Object System.Drawing.Point(20, 198)
-    $shellLabel.Size = New-Object System.Drawing.Size(80, 20)
-    $shellLabel.Font = New-Object System.Drawing.Font("Segoe UI", 10)
-    $dialog.Controls.Add($shellLabel)
+    $closeBtn = New-Object System.Windows.Forms.Button
+    $closeBtn.Text = "X"
+    $closeBtn.Location = New-Object System.Drawing.Point(872, 11)
+    $closeBtn.Size = New-Object System.Drawing.Size(32, 28)
+    $closeBtn.FlatStyle = "Flat"
+    $closeBtn.FlatAppearance.BorderSize = 0
+    $closeBtn.ForeColor = "White"
+    $closeBtn.BackColor = "#0f172a"
+    $closeBtn.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
+    $closeBtn.Cursor = "Hand"
+    $closeBtn.Add_Click({ $dialog.Close() })
+    $headerPanel.Controls.Add($closeBtn)
 
-    $shellCombo = New-Object System.Windows.Forms.ComboBox
-    $shellCombo.Location = New-Object System.Drawing.Point(100, 194)
-    $shellCombo.Size = New-Object System.Drawing.Size(140, 24)
-    $shellCombo.DropDownStyle = "DropDownList"
-    $shellCombo.Items.AddRange(@("PowerShell", "CMD"))
-    $shellCombo.SelectedIndex = 0
-    $dialog.Controls.Add($shellCombo)
+    $contentPanel = New-Object System.Windows.Forms.Panel
+    $contentPanel.Location = New-Object System.Drawing.Point(0, 54)
+    $contentPanel.Size = New-Object System.Drawing.Size(920, 306)
+    $contentPanel.BackColor = "#eef2ff"
+    $contentPanel.BorderStyle = "FixedSingle"
+    $dialog.Controls.Add($contentPanel)
 
-    $adminCheck = New-Object System.Windows.Forms.CheckBox
-    $adminCheck.Text = "Run as Administrator"
-    $adminCheck.Location = New-Object System.Drawing.Point(270, 196)
-    $adminCheck.Size = New-Object System.Drawing.Size(180, 24)
-    $adminCheck.Font = New-Object System.Drawing.Font("Segoe UI", 10)
-    $dialog.Controls.Add($adminCheck)
+    $subTitleLabel = New-Object System.Windows.Forms.Label
+    $subTitleLabel.Text = "Edit the selected command before running it:"
+    $subTitleLabel.Font = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Bold)
+    $subTitleLabel.ForeColor = "#111827"
+    $subTitleLabel.Location = New-Object System.Drawing.Point(20, 18)
+    $subTitleLabel.AutoSize = $true
+    $contentPanel.Controls.Add($subTitleLabel)
 
     $commandTextBox = New-Object System.Windows.Forms.TextBox
     $commandTextBox.Multiline = $true
     $commandTextBox.ScrollBars = "Vertical"
     $commandTextBox.Location = New-Object System.Drawing.Point(20, 52)
-    $commandTextBox.Size = New-Object System.Drawing.Size(840, 120)
+    $commandTextBox.Size = New-Object System.Drawing.Size(880, 130)
     $commandTextBox.Font = New-Object System.Drawing.Font("Consolas", 10)
     $commandTextBox.BackColor = "#ffffff"
     $commandTextBox.BorderStyle = "FixedSingle"
     $commandTextBox.Text = $CommandText.Trim()
-    $dialog.Controls.Add($commandTextBox)
+    $commandTextBox.ForeColor = "#0f172a"
+    $contentPanel.Controls.Add($commandTextBox)
+
+    $adminCheck = New-Object System.Windows.Forms.CheckBox
+    $adminCheck.Text = "Run as Administrator"
+    $adminCheck.Location = New-Object System.Drawing.Point(20, 205)
+    $adminCheck.Size = New-Object System.Drawing.Size(200, 24)
+    $adminCheck.Font = New-Object System.Drawing.Font("Segoe UI", 10)
+    $adminCheck.ForeColor = "#0f172a"
+    $adminCheck.BackColor = "#eef2ff"
+    $contentPanel.Controls.Add($adminCheck)
 
     $runBtn = New-Object System.Windows.Forms.Button
     $runBtn.Text = "Run"
-    $runBtn.Location = New-Object System.Drawing.Point(560, 232)
-    $runBtn.Size = New-Object System.Drawing.Size(160, 38)
-    $runBtn.BackColor = "#2563eb"
-    $runBtn.ForeColor = "White"
-    $runBtn.FlatStyle = "Flat"
+    $runBtn.Location = New-Object System.Drawing.Point(610, 246)
+    $runBtn.Size = New-Object System.Drawing.Size(150, 42)
+    Set-ModernButtonStyle -Button $runBtn -BackColor "#2563eb" -ForeColor "White" -Large $true
     $runBtn.Add_Click({
-        Start-CommandInShell -CommandText $commandTextBox.Text -Shell $shellCombo.SelectedItem -RunAsAdmin $adminCheck.Checked
+        Start-CommandInShell -CommandText $commandTextBox.Text -Shell 'CMD' -RunAsAdmin $adminCheck.Checked
         $dialog.Close()
     })
-    $dialog.Controls.Add($runBtn)
+    $contentPanel.Controls.Add($runBtn)
 
     $cancelBtn = New-Object System.Windows.Forms.Button
     $cancelBtn.Text = "Cancel"
-    $cancelBtn.Location = New-Object System.Drawing.Point(730, 232)
-    $cancelBtn.Size = New-Object System.Drawing.Size(130, 38)
-    $cancelBtn.FlatStyle = "Flat"
-    $cancelBtn.BackColor = "#e2e8f0"
-    $cancelBtn.ForeColor = "#0f172a"
+    $cancelBtn.Location = New-Object System.Drawing.Point(770, 246)
+    $cancelBtn.Size = New-Object System.Drawing.Size(130, 42)
+    Set-ModernButtonStyle -Button $cancelBtn -BackColor "#e2e8f0" -ForeColor "#0f172a" -Large $true
     $cancelBtn.Add_Click({
         $dialog.Close()
     })
-    $dialog.Controls.Add($cancelBtn)
+    $contentPanel.Controls.Add($cancelBtn)
 
     $dialog.ShowDialog() | Out-Null
 }
@@ -520,24 +659,9 @@ function Show-ADCheatSheet {
     $commandEditBox.BorderStyle = "FixedSingle"
     $adForm.Controls.Add($commandEditBox)
 
-    $shellLabel = New-Object System.Windows.Forms.Label
-    $shellLabel.Text = "Shell:"
-    $shellLabel.Location = New-Object System.Drawing.Point(20, 790)
-    $shellLabel.Size = New-Object System.Drawing.Size(50, 20)
-    $shellLabel.Font = New-Object System.Drawing.Font("Segoe UI", 9)
-    $adForm.Controls.Add($shellLabel)
-
-    $shellSelect = New-Object System.Windows.Forms.ComboBox
-    $shellSelect.Location = New-Object System.Drawing.Point(70, 786)
-    $shellSelect.Size = New-Object System.Drawing.Size(110, 24)
-    $shellSelect.DropDownStyle = "DropDownList"
-    $shellSelect.Items.AddRange(@("PowerShell", "CMD"))
-    $shellSelect.SelectedIndex = 0
-    $adForm.Controls.Add($shellSelect)
-
     $adminCheck = New-Object System.Windows.Forms.CheckBox
     $adminCheck.Text = "Run as Administrator"
-    $adminCheck.Location = New-Object System.Drawing.Point(200, 786)
+    $adminCheck.Location = New-Object System.Drawing.Point(20, 786)
     $adminCheck.Size = New-Object System.Drawing.Size(180, 24)
     $adminCheck.Font = New-Object System.Drawing.Font("Segoe UI", 9)
     $adForm.Controls.Add($adminCheck)
@@ -553,7 +677,7 @@ function Show-ADCheatSheet {
     $runNowBtn.Font = New-Object System.Drawing.Font("Segoe UI", 11, [System.Drawing.FontStyle]::Bold)
     $runNowBtn.Cursor = "Hand"
     $runNowBtn.Add_Click({
-        Start-CommandInShell -CommandText $commandEditBox.Text -Shell $shellSelect.SelectedItem -RunAsAdmin $adminCheck.Checked
+        Start-CommandInShell -CommandText $commandEditBox.Text -Shell 'CMD' -RunAsAdmin $adminCheck.Checked
     })
     $adForm.Controls.Add($runNowBtn)
 
@@ -568,7 +692,7 @@ function Show-ADCheatSheet {
         $commandEditBox.Text = $trimmedCommand
 
         try {
-            Start-Process powershell.exe -Verb RunAs -ArgumentList @('-NoExit', '-NoLogo', '-Command', $trimmedCommand) | Out-Null
+            Start-ShellProcess -FileName 'powershell.exe' -ArgumentList @('-NoExit', '-NoLogo', '-Command', $trimmedCommand) -RunAsAdmin:$false
         }
         catch {
             [System.Windows.Forms.MessageBox]::Show("Error: $($_.Exception.Message)", "Execution failed", "OK", "Error") | Out-Null
@@ -666,9 +790,10 @@ function Run-Command {
     param([string]$command)
     Append-Output "--- Running: $command ---"
     try {
-        $result = & cmd.exe /c $command 2>&1
-        Append-Output ($result | Out-String)
-    } catch {
+        Send-CommandToVisibleShell -CommandText $command -Shell 'CMD'
+        Append-Output "Command sent to the reusable CMD console."
+    }
+    catch {
         Append-Output "Error: $_"
     }
     Append-Output "--- Done ---"
