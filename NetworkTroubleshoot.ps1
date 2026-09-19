@@ -2,20 +2,39 @@
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
-# Create main form - PERFECT FIT, NO OVERLAP
+# Create main form - modern glass-inspired style
 $form = New-Object System.Windows.Forms.Form
 $form.Text = "IT Infrastructure Toolkit"
 $form.Size = New-Object System.Drawing.Size(600, 820)
 $form.StartPosition = "CenterScreen"
 $form.FormBorderStyle = "FixedDialog"
 $form.MaximizeBox = $false
-$form.BackColor = "#f1f5f9"
+$form.BackColor = "#eef4ff"
+$form.Padding = New-Object System.Windows.Forms.Padding(0, 0, 0, 0)
+
+function Set-ModernButtonStyle {
+    param(
+        [System.Windows.Forms.Button]$Button,
+        [string]$BackColor = "#4f46e5",
+        [string]$ForeColor = "White",
+        [bool]$Large = $false
+    )
+
+    $Button.BackColor = $BackColor
+    $Button.ForeColor = $ForeColor
+    $Button.FlatStyle = "Flat"
+    $Button.FlatAppearance.BorderSize = 0
+    $Button.FlatAppearance.MouseOverBackColor = "#4338ca"
+    $Button.FlatAppearance.MouseDownBackColor = "#312e81"
+    $Button.Cursor = "Hand"
+    $Button.Font = if ($Large) { New-Object System.Drawing.Font("Segoe UI", 11, [System.Drawing.FontStyle]::Bold) } else { New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold) }
+}
 
 # Create Header Panel
 $headerPanel = New-Object System.Windows.Forms.Panel
 $headerPanel.Size = New-Object System.Drawing.Size(600, 95)
 $headerPanel.Location = New-Object System.Drawing.Point(0, 0)
-$headerPanel.BackColor = "#4338ca"
+$headerPanel.BackColor = "#1d4ed8"
 $form.Controls.Add($headerPanel)
 
 # Add Main Title
@@ -316,6 +335,42 @@ function Get-ADCheatSheetText {
     return $sb.ToString()
 }
 
+function Start-CommandInShell {
+    param(
+        [string]$CommandText,
+        [ValidateSet('PowerShell', 'CMD')]
+        [string]$Shell = 'PowerShell',
+        [bool]$RunAsAdmin = $false
+    )
+
+    $trimmed = $CommandText.Trim()
+    if ([string]::IsNullOrWhiteSpace($trimmed)) {
+        [System.Windows.Forms.MessageBox]::Show("Please enter a command before running.", "Missing command", "OK", "Warning") | Out-Null
+        return
+    }
+
+    try {
+        if ($Shell -eq 'PowerShell') {
+            $file = 'powershell.exe'
+            $args = @('-NoExit', '-NoLogo', '-Command', $trimmed)
+        }
+        else {
+            $file = 'cmd.exe'
+            $args = @('/K', $trimmed)
+        }
+
+        if ($RunAsAdmin) {
+            Start-Process $file -Verb RunAs -ArgumentList $args | Out-Null
+        }
+        else {
+            Start-Process $file -ArgumentList $args | Out-Null
+        }
+    }
+    catch {
+        [System.Windows.Forms.MessageBox]::Show("Error: $($_.Exception.Message)", "Execution failed", "OK", "Error") | Out-Null
+    }
+}
+
 function Show-CommandEditorDialog {
     param(
         [string]$CommandText = ""
@@ -323,7 +378,7 @@ function Show-CommandEditorDialog {
 
     $dialog = New-Object System.Windows.Forms.Form
     $dialog.Text = "Edit Command Before Running"
-    $dialog.Size = New-Object System.Drawing.Size(900, 260)
+    $dialog.Size = New-Object System.Drawing.Size(900, 320)
     $dialog.StartPosition = "CenterParent"
     $dialog.FormBorderStyle = "FixedDialog"
     $dialog.MaximizeBox = $false
@@ -337,6 +392,28 @@ function Show-CommandEditorDialog {
     $titleLabel.AutoSize = $true
     $dialog.Controls.Add($titleLabel)
 
+    $shellLabel = New-Object System.Windows.Forms.Label
+    $shellLabel.Text = "Run in:"
+    $shellLabel.Location = New-Object System.Drawing.Point(20, 198)
+    $shellLabel.Size = New-Object System.Drawing.Size(80, 20)
+    $shellLabel.Font = New-Object System.Drawing.Font("Segoe UI", 10)
+    $dialog.Controls.Add($shellLabel)
+
+    $shellCombo = New-Object System.Windows.Forms.ComboBox
+    $shellCombo.Location = New-Object System.Drawing.Point(100, 194)
+    $shellCombo.Size = New-Object System.Drawing.Size(140, 24)
+    $shellCombo.DropDownStyle = "DropDownList"
+    $shellCombo.Items.AddRange(@("PowerShell", "CMD"))
+    $shellCombo.SelectedIndex = 0
+    $dialog.Controls.Add($shellCombo)
+
+    $adminCheck = New-Object System.Windows.Forms.CheckBox
+    $adminCheck.Text = "Run as Administrator"
+    $adminCheck.Location = New-Object System.Drawing.Point(270, 196)
+    $adminCheck.Size = New-Object System.Drawing.Size(180, 24)
+    $adminCheck.Font = New-Object System.Drawing.Font("Segoe UI", 10)
+    $dialog.Controls.Add($adminCheck)
+
     $commandTextBox = New-Object System.Windows.Forms.TextBox
     $commandTextBox.Multiline = $true
     $commandTextBox.ScrollBars = "Vertical"
@@ -349,32 +426,21 @@ function Show-CommandEditorDialog {
     $dialog.Controls.Add($commandTextBox)
 
     $runBtn = New-Object System.Windows.Forms.Button
-    $runBtn.Text = "Run in PowerShell"
-    $runBtn.Location = New-Object System.Drawing.Point(560, 182)
+    $runBtn.Text = "Run"
+    $runBtn.Location = New-Object System.Drawing.Point(560, 232)
     $runBtn.Size = New-Object System.Drawing.Size(160, 38)
     $runBtn.BackColor = "#2563eb"
     $runBtn.ForeColor = "White"
     $runBtn.FlatStyle = "Flat"
     $runBtn.Add_Click({
-        $finalCommand = $commandTextBox.Text.Trim()
-        if ([string]::IsNullOrWhiteSpace($finalCommand)) {
-            [System.Windows.Forms.MessageBox]::Show("Please enter a command before running.", "Missing command", "OK", "Warning") | Out-Null
-            return
-        }
-
-        try {
-            Start-Process powershell.exe -Verb RunAs -ArgumentList @('-NoExit', '-NoLogo', '-Command', $finalCommand) | Out-Null
-            $dialog.Close()
-        }
-        catch {
-            [System.Windows.Forms.MessageBox]::Show("Error: $($_.Exception.Message)", "Execution failed", "OK", "Error") | Out-Null
-        }
+        Start-CommandInShell -CommandText $commandTextBox.Text -Shell $shellCombo.SelectedItem -RunAsAdmin $adminCheck.Checked
+        $dialog.Close()
     })
     $dialog.Controls.Add($runBtn)
 
     $cancelBtn = New-Object System.Windows.Forms.Button
     $cancelBtn.Text = "Cancel"
-    $cancelBtn.Location = New-Object System.Drawing.Point(730, 182)
+    $cancelBtn.Location = New-Object System.Drawing.Point(730, 232)
     $cancelBtn.Size = New-Object System.Drawing.Size(130, 38)
     $cancelBtn.FlatStyle = "Flat"
     $cancelBtn.BackColor = "#e2e8f0"
@@ -422,16 +488,10 @@ function Show-ADCheatSheet {
     $copyBtn.BackColor = "#10b981"
     $copyBtn.ForeColor = "White"
     $copyBtn.FlatStyle = "Flat"
+    $copyBtn.FlatAppearance.BorderSize = 0
+    $copyBtn.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
+    $copyBtn.Cursor = "Hand"
     $adForm.Controls.Add($copyBtn)
-
-    $loadSampleBtn = New-Object System.Windows.Forms.Button
-    $loadSampleBtn.Text = "Load Sample"
-    $loadSampleBtn.Location = New-Object System.Drawing.Point(150, 82)
-    $loadSampleBtn.Size = New-Object System.Drawing.Size(120, 34)
-    $loadSampleBtn.BackColor = "#2563eb"
-    $loadSampleBtn.ForeColor = "White"
-    $loadSampleBtn.FlatStyle = "Flat"
-    $adForm.Controls.Add($loadSampleBtn)
 
     $scrollPanel = New-Object System.Windows.Forms.Panel
     $scrollPanel.Location = New-Object System.Drawing.Point(20, 135)
@@ -460,6 +520,28 @@ function Show-ADCheatSheet {
     $commandEditBox.BorderStyle = "FixedSingle"
     $adForm.Controls.Add($commandEditBox)
 
+    $shellLabel = New-Object System.Windows.Forms.Label
+    $shellLabel.Text = "Shell:"
+    $shellLabel.Location = New-Object System.Drawing.Point(20, 790)
+    $shellLabel.Size = New-Object System.Drawing.Size(50, 20)
+    $shellLabel.Font = New-Object System.Drawing.Font("Segoe UI", 9)
+    $adForm.Controls.Add($shellLabel)
+
+    $shellSelect = New-Object System.Windows.Forms.ComboBox
+    $shellSelect.Location = New-Object System.Drawing.Point(70, 786)
+    $shellSelect.Size = New-Object System.Drawing.Size(110, 24)
+    $shellSelect.DropDownStyle = "DropDownList"
+    $shellSelect.Items.AddRange(@("PowerShell", "CMD"))
+    $shellSelect.SelectedIndex = 0
+    $adForm.Controls.Add($shellSelect)
+
+    $adminCheck = New-Object System.Windows.Forms.CheckBox
+    $adminCheck.Text = "Run as Administrator"
+    $adminCheck.Location = New-Object System.Drawing.Point(200, 786)
+    $adminCheck.Size = New-Object System.Drawing.Size(180, 24)
+    $adminCheck.Font = New-Object System.Drawing.Font("Segoe UI", 9)
+    $adForm.Controls.Add($adminCheck)
+
     $runNowBtn = New-Object System.Windows.Forms.Button
     $runNowBtn.Location = New-Object System.Drawing.Point(790, 660)
     $runNowBtn.Size = New-Object System.Drawing.Size(160, 120)
@@ -467,20 +549,11 @@ function Show-ADCheatSheet {
     $runNowBtn.BackColor = "#2563eb"
     $runNowBtn.ForeColor = "White"
     $runNowBtn.FlatStyle = "Flat"
+    $runNowBtn.FlatAppearance.BorderSize = 0
     $runNowBtn.Font = New-Object System.Drawing.Font("Segoe UI", 11, [System.Drawing.FontStyle]::Bold)
+    $runNowBtn.Cursor = "Hand"
     $runNowBtn.Add_Click({
-        $commandText = $commandEditBox.Text.Trim()
-        if ([string]::IsNullOrWhiteSpace($commandText)) {
-            [System.Windows.Forms.MessageBox]::Show("Please enter a command before running.", "Missing command", "OK", "Warning") | Out-Null
-            return
-        }
-
-        try {
-            Start-Process powershell.exe -Verb RunAs -ArgumentList @('-NoExit', '-NoLogo', '-Command', $commandText) | Out-Null
-        }
-        catch {
-            [System.Windows.Forms.MessageBox]::Show("Error: $($_.Exception.Message)", "Execution failed", "OK", "Error") | Out-Null
-        }
+        Start-CommandInShell -CommandText $commandEditBox.Text -Shell $shellSelect.SelectedItem -RunAsAdmin $adminCheck.Checked
     })
     $adForm.Controls.Add($runNowBtn)
 
@@ -584,11 +657,6 @@ function Show-ADCheatSheet {
         }
     })
 
-    $loadSampleBtn.Add_Click({
-        $sampleText = Get-ADCheatSheetText -DomainName $DefaultDomain
-        $commandEditBox.Text = $sampleText
-    })
-
     $populateButtons.Invoke()
     $adForm.ShowDialog()
 }
@@ -608,18 +676,15 @@ function Run-Command {
 
 # Primary Button Color
 $primaryColor = "#4f46e5"
+$secondaryColor = "#0ea5e9"
+$softGray = "#e2e8f0"
 
 # Column 1 (Left)
 $btn1 = New-Object System.Windows.Forms.Button
 $btn1.Text = "1. Show IP Configuration"
 $btn1.Location = New-Object System.Drawing.Point(45, 115)
 $btn1.Size = New-Object System.Drawing.Size(240, 44)
-$btn1.BackColor = $primaryColor
-$btn1.ForeColor = "White"
-$btn1.FlatStyle = "Flat"
-$btn1.Font = New-Object System.Drawing.Font("Segoe UI", 10)
-$btn1.FlatAppearance.BorderSize = 0
-$btn1.Cursor = "Hand"
+Set-ModernButtonStyle -Button $btn1 -BackColor $primaryColor -ForeColor "White"
 $btn1.TextAlign = [System.Drawing.ContentAlignment]::MiddleLeft
 $btn1.Add_Click({ Run-Command "ipconfig /all" })
 $form.Controls.Add($btn1)
@@ -628,12 +693,7 @@ $btn2 = New-Object System.Windows.Forms.Button
 $btn2.Text = "2. Flush DNS Cache"
 $btn2.Location = New-Object System.Drawing.Point(45, 167)
 $btn2.Size = New-Object System.Drawing.Size(240, 44)
-$btn2.BackColor = $primaryColor
-$btn2.ForeColor = "White"
-$btn2.FlatStyle = "Flat"
-$btn2.Font = New-Object System.Drawing.Font("Segoe UI", 10)
-$btn2.FlatAppearance.BorderSize = 0
-$btn2.Cursor = "Hand"
+Set-ModernButtonStyle -Button $btn2 -BackColor $primaryColor -ForeColor "White"
 $btn2.TextAlign = [System.Drawing.ContentAlignment]::MiddleLeft
 $btn2.Add_Click({ Run-Command "ipconfig /flushdns" })
 $form.Controls.Add($btn2)
@@ -642,12 +702,7 @@ $btn3 = New-Object System.Windows.Forms.Button
 $btn3.Text = "3. Release IP Address"
 $btn3.Location = New-Object System.Drawing.Point(45, 219)
 $btn3.Size = New-Object System.Drawing.Size(240, 44)
-$btn3.BackColor = $primaryColor
-$btn3.ForeColor = "White"
-$btn3.FlatStyle = "Flat"
-$btn3.Font = New-Object System.Drawing.Font("Segoe UI", 10)
-$btn3.FlatAppearance.BorderSize = 0
-$btn3.Cursor = "Hand"
+Set-ModernButtonStyle -Button $btn3 -BackColor $primaryColor -ForeColor "White"
 $btn3.TextAlign = [System.Drawing.ContentAlignment]::MiddleLeft
 $btn3.Add_Click({ Run-Command "ipconfig /release" })
 $form.Controls.Add($btn3)
@@ -656,12 +711,7 @@ $btn4 = New-Object System.Windows.Forms.Button
 $btn4.Text = "4. Renew IP Address"
 $btn4.Location = New-Object System.Drawing.Point(45, 271)
 $btn4.Size = New-Object System.Drawing.Size(240, 44)
-$btn4.BackColor = $primaryColor
-$btn4.ForeColor = "White"
-$btn4.FlatStyle = "Flat"
-$btn4.Font = New-Object System.Drawing.Font("Segoe UI", 10)
-$btn4.FlatAppearance.BorderSize = 0
-$btn4.Cursor = "Hand"
+Set-ModernButtonStyle -Button $btn4 -BackColor $primaryColor -ForeColor "White"
 $btn4.TextAlign = [System.Drawing.ContentAlignment]::MiddleLeft
 $btn4.Add_Click({ Run-Command "ipconfig /renew" })
 $form.Controls.Add($btn4)
@@ -670,12 +720,7 @@ $btn9 = New-Object System.Windows.Forms.Button
 $btn9.Text = "9. Network Settings"
 $btn9.Location = New-Object System.Drawing.Point(45, 323)
 $btn9.Size = New-Object System.Drawing.Size(240, 44)
-$btn9.BackColor = $primaryColor
-$btn9.ForeColor = "White"
-$btn9.FlatStyle = "Flat"
-$btn9.Font = New-Object System.Drawing.Font("Segoe UI", 10)
-$btn9.FlatAppearance.BorderSize = 0
-$btn9.Cursor = "Hand"
+Set-ModernButtonStyle -Button $btn9 -BackColor $primaryColor -ForeColor "White"
 $btn9.TextAlign = [System.Drawing.ContentAlignment]::MiddleLeft
 $btn9.Add_Click({ Start-Process "ncpa.cpl" })
 $form.Controls.Add($btn9)
@@ -685,12 +730,7 @@ $btn5 = New-Object System.Windows.Forms.Button
 $btn5.Text = "5. Reset Winsock"
 $btn5.Location = New-Object System.Drawing.Point(315, 115)
 $btn5.Size = New-Object System.Drawing.Size(240, 44)
-$btn5.BackColor = $primaryColor
-$btn5.ForeColor = "White"
-$btn5.FlatStyle = "Flat"
-$btn5.Font = New-Object System.Drawing.Font("Segoe UI", 10)
-$btn5.FlatAppearance.BorderSize = 0
-$btn5.Cursor = "Hand"
+Set-ModernButtonStyle -Button $btn5 -BackColor $primaryColor -ForeColor "White"
 $btn5.TextAlign = [System.Drawing.ContentAlignment]::MiddleLeft
 $btn5.Add_Click({ 
     Run-Command "netsh winsock reset"
@@ -702,12 +742,7 @@ $btn6 = New-Object System.Windows.Forms.Button
 $btn6.Text = "6. Reset TCP/IP Stack"
 $btn6.Location = New-Object System.Drawing.Point(315, 167)
 $btn6.Size = New-Object System.Drawing.Size(240, 44)
-$btn6.BackColor = $primaryColor
-$btn6.ForeColor = "White"
-$btn6.FlatStyle = "Flat"
-$btn6.Font = New-Object System.Drawing.Font("Segoe UI", 10)
-$btn6.FlatAppearance.BorderSize = 0
-$btn6.Cursor = "Hand"
+Set-ModernButtonStyle -Button $btn6 -BackColor $primaryColor -ForeColor "White"
 $btn6.TextAlign = [System.Drawing.ContentAlignment]::MiddleLeft
 $btn6.Add_Click({ 
     Run-Command "netsh int ip reset"
@@ -719,12 +754,7 @@ $btn7 = New-Object System.Windows.Forms.Button
 $btn7.Text = "7. Ping Google (8.8.8.8)"
 $btn7.Location = New-Object System.Drawing.Point(315, 219)
 $btn7.Size = New-Object System.Drawing.Size(240, 44)
-$btn7.BackColor = $primaryColor
-$btn7.ForeColor = "White"
-$btn7.FlatStyle = "Flat"
-$btn7.Font = New-Object System.Drawing.Font("Segoe UI", 10)
-$btn7.FlatAppearance.BorderSize = 0
-$btn7.Cursor = "Hand"
+Set-ModernButtonStyle -Button $btn7 -BackColor $primaryColor -ForeColor "White"
 $btn7.TextAlign = [System.Drawing.ContentAlignment]::MiddleLeft
 $btn7.Add_Click({ Run-Command "ping -n 4 8.8.8.8" })
 $form.Controls.Add($btn7)
@@ -733,12 +763,7 @@ $btn8 = New-Object System.Windows.Forms.Button
 $btn8.Text = "8. Network Statistics"
 $btn8.Location = New-Object System.Drawing.Point(315, 271)
 $btn8.Size = New-Object System.Drawing.Size(240, 44)
-$btn8.BackColor = $primaryColor
-$btn8.ForeColor = "White"
-$btn8.FlatStyle = "Flat"
-$btn8.Font = New-Object System.Drawing.Font("Segoe UI", 10)
-$btn8.FlatAppearance.BorderSize = 0
-$btn8.Cursor = "Hand"
+Set-ModernButtonStyle -Button $btn8 -BackColor $primaryColor -ForeColor "White"
 $btn8.TextAlign = [System.Drawing.ContentAlignment]::MiddleLeft
 $btn8.Add_Click({ Run-Command "netstat -ano" })
 $form.Controls.Add($btn8)
@@ -747,12 +772,7 @@ $btn10 = New-Object System.Windows.Forms.Button
 $btn10.Text = "10. Wi-Fi Settings"
 $btn10.Location = New-Object System.Drawing.Point(315, 323)
 $btn10.Size = New-Object System.Drawing.Size(240, 44)
-$btn10.BackColor = $primaryColor
-$btn10.ForeColor = "White"
-$btn10.FlatStyle = "Flat"
-$btn10.Font = New-Object System.Drawing.Font("Segoe UI", 10)
-$btn10.FlatAppearance.BorderSize = 0
-$btn10.Cursor = "Hand"
+Set-ModernButtonStyle -Button $btn10 -BackColor $primaryColor -ForeColor "White"
 $btn10.TextAlign = [System.Drawing.ContentAlignment]::MiddleLeft
 $btn10.Add_Click({ Start-Process "ms-settings:network-wifi" })
 $form.Controls.Add($btn10)
@@ -762,12 +782,7 @@ $btn11 = New-Object System.Windows.Forms.Button
 $btn11.Text = "11. Full Network Repair"
 $btn11.Location = New-Object System.Drawing.Point(45, 375)
 $btn11.Size = New-Object System.Drawing.Size(510, 44)
-$btn11.BackColor = "#f59e0b"
-$btn11.ForeColor = "White"
-$btn11.FlatStyle = "Flat"
-$btn11.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
-$btn11.FlatAppearance.BorderSize = 0
-$btn11.Cursor = "Hand"
+Set-ModernButtonStyle -Button $btn11 -BackColor "#f59e0b" -ForeColor "White" -Large $true
 $btn11.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
 $btn11.Add_Click({ 
     Append-Output "=== Starting Full Network Repair ==="
@@ -785,12 +800,7 @@ $btn12 = New-Object System.Windows.Forms.Button
 $btn12.Text = "12. Windows Optimization"
 $btn12.Location = New-Object System.Drawing.Point(45, 427)
 $btn12.Size = New-Object System.Drawing.Size(510, 44)
-$btn12.BackColor = "#10b981"
-$btn12.ForeColor = "White"
-$btn12.FlatStyle = "Flat"
-$btn12.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
-$btn12.FlatAppearance.BorderSize = 0
-$btn12.Cursor = "Hand"
+Set-ModernButtonStyle -Button $btn12 -BackColor "#10b981" -ForeColor "White" -Large $true
 $btn12.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
 $btn12.Add_Click({ 
     Append-Output "=== Starting Windows Optimization ==="
@@ -806,12 +816,7 @@ $btn13 = New-Object System.Windows.Forms.Button
 $btn13.Text = "13. Active Directory Cheat Sheet"
 $btn13.Location = New-Object System.Drawing.Point(45, 480)
 $btn13.Size = New-Object System.Drawing.Size(510, 44)
-$btn13.BackColor = "#7c3aed"
-$btn13.ForeColor = "White"
-$btn13.FlatStyle = "Flat"
-$btn13.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
-$btn13.FlatAppearance.BorderSize = 0
-$btn13.Cursor = "Hand"
+Set-ModernButtonStyle -Button $btn13 -BackColor "#7c3aed" -ForeColor "White" -Large $true
 $btn13.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
 $btn13.Add_Click({
     Show-ADCheatSheet -DefaultDomain "domain.local"
