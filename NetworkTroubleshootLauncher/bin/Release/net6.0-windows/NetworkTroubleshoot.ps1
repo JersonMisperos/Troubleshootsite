@@ -4,7 +4,7 @@ Add-Type -AssemblyName System.Drawing
 
 # Create main form - PERFECT FIT, NO OVERLAP
 $form = New-Object System.Windows.Forms.Form
-$form.Text = "Network & Optimization Toolkit"
+$form.Text = "IT Infrastructure Toolkit"
 $form.Size = New-Object System.Drawing.Size(600, 820)
 $form.StartPosition = "CenterScreen"
 $form.FormBorderStyle = "FixedDialog"
@@ -20,7 +20,7 @@ $form.Controls.Add($headerPanel)
 
 # Add Main Title
 $titleLabel = New-Object System.Windows.Forms.Label
-$titleLabel.Text = "Network & Optimization Toolkit"
+$titleLabel.Text = "IT Infrastructure Toolkit"
 $titleLabel.Font = New-Object System.Drawing.Font("Segoe UI", 18, [System.Drawing.FontStyle]::Bold)
 $titleLabel.ForeColor = "White"
 $titleLabel.Location = New-Object System.Drawing.Point(45, 20)
@@ -819,7 +819,7 @@ $btn13.Add_Click({
 $form.Controls.Add($btn13)
 
 # Show the form
-Append-Output "Welcome to the Network & Optimization Toolkit"
+Append-Output "Welcome to the IT Infrastructure Toolkit"
 Append-Output "Professional tools for system administration"
 Append-Output ""
 Append-Output "Click any button to get started!"
